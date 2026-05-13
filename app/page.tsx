@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PersonaCard from "@/components/persona/PersonaCard";
 import BriefForm from "@/components/editor/BriefForm";
 import OutputEditor from "@/components/editor/OutputEditor";
@@ -9,11 +9,48 @@ import { Persona, Draft, BriefFormData } from "@/types";
 
 type Step = "persona" | "brief" | "draft" | "export";
 
+const STORAGE_KEY = "marketingos-wizard-v1";
+
 export default function Home() {
+  const [hydrated, setHydrated] = useState(false);
   const [step, setStep] = useState<Step>("persona");
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [briefData, setBriefData] = useState<BriefFormData | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw) as {
+          step?: Step;
+          selectedPersona?: Persona | null;
+          briefData?: BriefFormData | null;
+          draft?: Draft | null;
+        };
+        const steps: Step[] = ["persona", "brief", "draft", "export"];
+        if (data.step && steps.includes(data.step)) setStep(data.step);
+        if (data.selectedPersona) setSelectedPersona(data.selectedPersona);
+        if (data.briefData) setBriefData(data.briefData);
+        if (data.draft) setDraft(data.draft);
+      }
+    } catch {
+      /* ignore corrupt storage */
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ step, selectedPersona, briefData, draft })
+      );
+    } catch {
+      /* quota / private mode */
+    }
+  }, [hydrated, step, selectedPersona, briefData, draft]);
 
   const handlePersonaSelect = (persona: Persona) => {
     setSelectedPersona(persona);
@@ -22,6 +59,7 @@ export default function Home() {
 
   const handleBriefSubmit = (_summary: string, formData: BriefFormData) => {
     setBriefData(formData);
+    setDraft(null);
     setStep("draft");
   };
 
@@ -34,6 +72,11 @@ export default function Home() {
   };
 
   const handleReset = () => {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
     setStep("persona");
     setSelectedPersona(null);
     setBriefData(null);
@@ -56,10 +99,15 @@ export default function Home() {
           </span>
         </div>
 
-        <nav className="flex items-center gap-1">
+        <nav
+          className="flex items-center gap-1"
+          aria-label="Workflow steps"
+        >
           {steps.map((s, i) => (
             <button
               key={s}
+              type="button"
+              aria-current={s === step ? "step" : undefined}
               onClick={() => i <= stepIdx && setStep(s)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-all ${
                 s === step
@@ -86,6 +134,7 @@ export default function Home() {
         </nav>
 
         <button
+          type="button"
           onClick={handleReset}
           className="text-os-muted text-sm hover:text-os-text transition-colors"
         >

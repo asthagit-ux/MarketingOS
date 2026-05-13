@@ -42,18 +42,56 @@ export interface RefinementSettings {
   length: "short" | "medium" | "long";
 }
 
+/** Structured model output (validated with Zod on the server). */
+export interface CopyVariant {
+  label: string;
+  hook: string;
+  body: string;
+  cta: string;
+}
+
+export interface CopyOutput {
+  hook: string;
+  body: string;
+  cta: string;
+  rationale: string;
+  variants?: CopyVariant[];
+}
+
 export interface Draft {
   id: string;
-  content: string;
+  output: CopyOutput;
   format: OutputFormat;
   persona: PersonaId;
   brief: BriefFormData;
   refinement: RefinementSettings;
-  createdAt: Date;
-  variants?: string[];
+  createdAt: string;
 }
 
 export interface ExportOptions {
   format: "markdown" | "plain-text" | "html" | "json";
   includeMetadata: boolean;
+}
+
+export interface GenerateRequestBody {
+  personaId: PersonaId;
+  brief: BriefFormData;
+  refinement: RefinementSettings;
+  /** When set, model should produce a new angle vs this prior output */
+  variantOf?: CopyOutput;
+}
+
+export interface RefineRequestBody {
+  personaId: PersonaId;
+  output: CopyOutput;
+  refinement: RefinementSettings;
+  customInstruction?: string;
+}
+
+export interface ApiErrorBody {
+  error: {
+    code: string;
+    message: string;
+    requestId?: string;
+  };
 }

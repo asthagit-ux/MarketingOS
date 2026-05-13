@@ -3,11 +3,11 @@
 import { Persona } from "@/types";
 import { PERSONAS } from "@/lib/personas";
 
-interface PersonaSelectorProps {
+interface PersonaCardProps {
   onSelect: (persona: Persona) => void;
 }
 
-export default function PersonaSelector({ onSelect }: PersonaSelectorProps) {
+export default function PersonaCard({ onSelect }: PersonaCardProps) {
   return (
     <div className="stagger-children">
       <div className="mb-12 text-center">
@@ -22,7 +22,7 @@ export default function PersonaSelector({ onSelect }: PersonaSelectorProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {PERSONAS.map((persona) => (
-          <PersonaCard key={persona.id} persona={persona} onSelect={onSelect} />
+          <PersonaChoiceCard key={persona.id} persona={persona} onSelect={onSelect} />
         ))}
       </div>
 
@@ -33,7 +33,7 @@ export default function PersonaSelector({ onSelect }: PersonaSelectorProps) {
   );
 }
 
-function PersonaCard({
+function PersonaChoiceCard({
   persona,
   onSelect,
 }: {
@@ -42,12 +42,16 @@ function PersonaCard({
 }) {
   return (
     <button
+      type="button"
       onClick={() => onSelect(persona)}
       className="group relative text-left p-6 rounded-xl border border-os-border bg-os-surface hover:border-os-accent/60 hover:bg-os-surface-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-os-accent/40"
     >
-      {/* Accent glow on hover */}
-      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at top left, rgba(212,245,60,0.06) 0%, transparent 70%)" }}
+      <div
+        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at top left, rgba(212,245,60,0.06) 0%, transparent 70%)",
+        }}
       />
 
       <div className="relative">

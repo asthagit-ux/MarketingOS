@@ -1,35 +1,74 @@
 import { NextRequest, NextResponse } from "next/server";
-import { RefineRequest } from "@/types";
-import { getSystemPrompt, buildRefinePrompt } from "@/lib/prompts/templates";
-import { refineCopy } from "@/lib/langchain/client";
+import { randomUUID } from "crypto";
+import { refineRequestSchema } from "@/lib/validation/api";
+import { generateValidatedCopy } from "@/lib/langchain/client";
+import { getSystemPrompt, buildRefinePrompt } from "@/lib/prompts/marketing";
 
 export async function POST(req: NextRequest) {
-  try {
-    const body: RefineRequest = await req.json();
-    const { original, brief, tone, lengthPreference, customInstruction } = body;
+  const requestId = randomUUID();
+  const started = Date.now();
+  let personaId: string | undefined;
 
-    if (!original || !brief?.persona) {
+  try {
+    const json = await req.json();
+    const parsed = refineRequestSchema.safeParse(json);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing original copy or persona" },
+        {
+          error: {
+            code: "VALIDATION",
+            message: "Invalid request body",
+            details: parsed.error.flatten(),
+            requestId,
+          },
+        },
         { status: 400 }
       );
     }
 
-    const systemPrompt = getSystemPrompt(brief.persona);
-    const refinePrompt = buildRefinePrompt(
-      JSON.stringify(original, null, 2),
-      customInstruction ?? "",
-      tone,
-      lengthPreference
+    const { personaId: pid, output, refinement, customInstruction } = parsed.data;
+    personaId = pid;
+    const system = getSystemPrompt(pid);
+    const user = buildRefinePrompt(
+      JSON.stringify(output, null, 2),
+      refinement,
+      customInstruction ?? ""
     );
 
-    const output = await refineCopy(systemPrompt, refinePrompt);
+    const data = await generateValidatedCopy(system, user);
 
-    return NextResponse.json({ data: output });
+    console.log(
+      JSON.stringify({
+        level: "info",
+        route: "/api/refine",
+        requestId,
+        durationMs: Date.now() - started,
+        personaId: pid,
+        status: 200,
+      })
+    );
+
+    return NextResponse.json({ data, requestId });
   } catch (err) {
-    console.error("[/api/refine]", err);
+    console.error(
+      JSON.stringify({
+        level: "error",
+        route: "/api/refine",
+        requestId,
+        durationMs: Date.now() - started,
+        personaId,
+        message: err instanceof Error ? err.message : String(err),
+      })
+    );
     return NextResponse.json(
-      { error: "Refinement failed." },
+      {
+        error: {
+          code: "REFINE_FAILED",
+          message:
+            err instanceof Error ? err.message : "Refinement failed. Try again.",
+          requestId,
+        },
+      },
       { status: 500 }
     );
   }

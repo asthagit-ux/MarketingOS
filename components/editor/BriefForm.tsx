@@ -61,6 +61,7 @@ export default function BriefInput({ persona, onSubmit, onBack }: BriefInputProp
       {/* Persona badge */}
       <div className="flex items-center gap-3 mb-8">
         <button
+          type="button"
           onClick={onBack}
           className="text-os-muted hover:text-os-text text-sm transition-colors"
         >
@@ -157,6 +158,7 @@ export default function BriefInput({ persona, onSubmit, onBack }: BriefInputProp
         </Field>
 
         <button
+          type="button"
           onClick={handleSubmit}
           className="w-full py-3.5 bg-os-accent text-black font-display font-bold rounded-lg hover:bg-os-accent/90 transition-colors text-sm"
         >

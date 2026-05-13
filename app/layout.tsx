@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Syne, DM_Mono } from "next/font/google";
+import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
 const syne = Syne({
@@ -27,7 +28,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${syne.variable} ${dmMono.variable}`}>
-      <body>{children}</body>
+      <body className="flex flex-col min-h-screen">
+        <div className="flex-1 flex flex-col">{children}</div>
+        <SiteFooter />
+      </body>
     </html>
   );
 }
