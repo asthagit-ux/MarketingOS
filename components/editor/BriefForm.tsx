@@ -4,6 +4,29 @@ import { useState } from "react";
 import { Persona, BriefFormData, AudienceSegment, OutputFormat } from "@/types";
 import { OUTPUT_FORMAT_LABELS, AUDIENCE_LABELS } from "@/lib/personas";
 
+function BriefField({
+  label,
+  hint,
+  error,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between">
+        <label className="text-sm font-medium text-os-text">{label}</label>
+        {hint && <span className="text-xs text-os-muted">{hint}</span>}
+      </div>
+      {children}
+      {error && <p className="text-xs text-os-error">{error}</p>}
+    </div>
+  );
+}
+
 interface BriefInputProps {
   persona: Persona;
   onSubmit: (brief: string, formData: BriefFormData) => void;
@@ -34,27 +57,6 @@ export default function BriefInput({ persona, onSubmit, onBack }: BriefInputProp
     const summary = `Product: ${form.product}. Goal: ${form.goal}. Format: ${form.outputFormat}. Audience: ${form.audience}.`;
     onSubmit(summary, form);
   };
-
-  const Field = ({
-    label,
-    hint,
-    error,
-    children,
-  }: {
-    label: string;
-    hint?: string;
-    error?: string;
-    children: React.ReactNode;
-  }) => (
-    <div className="space-y-1.5">
-      <div className="flex items-baseline justify-between">
-        <label className="text-sm font-medium text-os-text">{label}</label>
-        {hint && <span className="text-xs text-os-muted">{hint}</span>}
-      </div>
-      {children}
-      {error && <p className="text-xs text-os-error">{error}</p>}
-    </div>
-  );
 
   return (
     <div className="max-w-2xl mx-auto animate-fade-up">
@@ -91,7 +93,7 @@ export default function BriefInput({ persona, onSubmit, onBack }: BriefInputProp
           ))}
         </div>
 
-        <Field label="Product / Service" error={errors.product}>
+        <BriefField label="Product / Service" error={errors.product}>
           <textarea
             value={form.product}
             onChange={(e) => setForm({ ...form, product: e.target.value })}
@@ -99,9 +101,9 @@ export default function BriefInput({ persona, onSubmit, onBack }: BriefInputProp
             rows={2}
             className="w-full bg-os-surface border border-os-border rounded-lg px-4 py-3 text-sm text-os-text placeholder:text-os-muted focus:outline-none focus:border-os-accent/60 resize-none transition-colors"
           />
-        </Field>
+        </BriefField>
 
-        <Field label="Campaign Goal" error={errors.goal}>
+        <BriefField label="Campaign Goal" error={errors.goal}>
           <input
             type="text"
             value={form.goal}
@@ -109,10 +111,10 @@ export default function BriefInput({ persona, onSubmit, onBack }: BriefInputProp
             placeholder="e.g. Drive sign-ups, launch a new feature, retarget warm leads"
             className="w-full bg-os-surface border border-os-border rounded-lg px-4 py-3 text-sm text-os-text placeholder:text-os-muted focus:outline-none focus:border-os-accent/60 transition-colors"
           />
-        </Field>
+        </BriefField>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Output Format">
+          <BriefField label="Output Format">
             <select
               value={form.outputFormat}
               onChange={(e) =>
@@ -126,9 +128,9 @@ export default function BriefInput({ persona, onSubmit, onBack }: BriefInputProp
                 </option>
               ))}
             </select>
-          </Field>
+          </BriefField>
 
-          <Field label="Target Audience">
+          <BriefField label="Target Audience">
             <select
               value={form.audience}
               onChange={(e) =>
@@ -142,10 +144,10 @@ export default function BriefInput({ persona, onSubmit, onBack }: BriefInputProp
                 </option>
               ))}
             </select>
-          </Field>
+          </BriefField>
         </div>
 
-        <Field label="Additional Context" hint="Optional">
+        <BriefField label="Additional Context" hint="Optional">
           <textarea
             value={form.additionalContext}
             onChange={(e) =>
@@ -155,7 +157,7 @@ export default function BriefInput({ persona, onSubmit, onBack }: BriefInputProp
             rows={3}
             className="w-full bg-os-surface border border-os-border rounded-lg px-4 py-3 text-sm text-os-text placeholder:text-os-muted focus:outline-none focus:border-os-accent/60 resize-none transition-colors"
           />
-        </Field>
+        </BriefField>
 
         <button
           type="button"
